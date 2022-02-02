@@ -1,0 +1,41 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.HappyPlaces" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/pink</item>
+        <item name="colorPrimaryVariant">@color/lightRed</item>
+        <item name="colorOnPrimary">@color/lightGrey</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/green</item>
+        <item name="colorSecondaryVariant">@color/lightGreen</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
+
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="CustomTextInputLayoutTheme" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="colorPrimary">@color/darkGreen</item>
+        <item name="colorPrimaryVariant">@color/darkGreen</item>
+        <item name="colorOnPrimary">@color/darkGreen</item>
+    </style>
+
+    <style name="CustomNoActionBarTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:statusBarColor"> @color/lightRed</item>
+        <item name="android:datePickerStyle">@style/CustomDatePicker</item>
+        <item name="colorPrimary">@color/darkGreen</item>
+        <item name="colorSecondary">@color/pink</item>
+    </style>
+
+    <style name="CustomDatePicker" parent="@android:style/Widget.Material.Light.DatePicker">
+        <item name="android:headerBackground">@color/lightRed</item>
+    </style>
+
+    <style name="CustomToolbarStyle">
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:colorControlNormal">@color/white</item>
+    </style>
+
+</resources>
