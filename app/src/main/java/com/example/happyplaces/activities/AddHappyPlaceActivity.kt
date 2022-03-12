@@ -35,6 +35,7 @@ import java.io.IOException
 import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -105,6 +106,8 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
     }
 
+
+
     private fun updateDateView() {
         val myFormat = "dd.MM.yyyy"
         val simpleDateFormat = SimpleDateFormat(myFormat, Locale.getDefault())
@@ -165,6 +168,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                         val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
                         if (addHappyPlace > 0){
                             Toast.makeText(this, "The happy place details are inserted successfully!", Toast.LENGTH_LONG).show()
+                            setResult(Activity.RESULT_OK)
                             finish()
                         }
 

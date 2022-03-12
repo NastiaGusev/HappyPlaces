@@ -16,4 +16,23 @@
     <dimen name="image_border_stroke_size">0.5dp</dimen>
     <dimen name="add_place_image_shape_radius">3dp</dimen>
     <dimen name="button_radius">10dp</dimen>
+    <dimen name="no_records_available_txt_size">16sp</dimen>
+
+    <dimen name="item_happy_place_margin_start_end">8dp</dimen>
+    <dimen name="item_happy_place_corner_radius">3dp</dimen>
+    <dimen name="item_happy_place_elevation">3dp</dimen>
+    <dimen name="item_happy_place_content_padding">5dp</dimen>
+    <dimen name="item_happy_place_circular_image_size">70dp</dimen>
+    <dimen name="item_happy_place_margin_start">10dp</dimen>
+    <dimen name="item_happy_place_margin_end">2dp</dimen>
+    <dimen name="item_happy_place_title_txt_size">16sp</dimen>
+    <dimen name="item_happy_place_description_txt_size">14sp</dimen>
+
+    <dimen name="detail_screen_image_height_size">250dp</dimen>
+    <dimen name="detail_screen_description_margin">8dp</dimen>
+    <dimen name="detail_screen_description_text_size">16sp</dimen>
+    <dimen name="detail_screen_location_marginStartEnd">8dp</dimen>
+    <dimen name="detail_screen_location_marginTop">16dp</dimen>
+    <dimen name="detail_screen_location_text_size">18sp</dimen>
+
 </resources>

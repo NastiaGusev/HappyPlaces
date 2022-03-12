@@ -14,10 +14,15 @@
     <color name="green">#84dcc6</color>
     <color name="lightGreen">#a5ffd6</color>
     <color name="darkGrey">#5e6472</color>
+    <color name="grey">#878C96</color>
     <color name="lightGrey">#CCCCCC</color>
 
     <color name="primary_text_color">#212121</color>
     <color name="secondary_text_color">#9AA2AF</color>
     <color name="white_color">#FFFFFF</color>
     <color name="button_background_color">#a5ffd6</color>
+    <color name="detail_screen_description_text_color">#757575</color>
+
+
+
 </resources>

@@ -9,7 +9,9 @@
         <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/drawable/ic_action_add_24.xml" value="0.165" />
         <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1665" />
         <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/layout/activity_add_happy_place.xml" value="0.2" />
-        <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/layout/activity_main.xml" value="0.176" />
+        <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/layout/activity_happy_place_detail.xml" value="0.26510416666666664" />
+        <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/Users/gusev/StudioProjects/HappyPlaces/app/src/main/res/layout/item_happy_place.xml" value="0.33177083333333335" />
       </map>
     </option>
   </component>

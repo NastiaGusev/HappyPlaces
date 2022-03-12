@@ -7,6 +7,25 @@
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/happyPlaces_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        tools:visibility="gone">
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/txt_no_records_available"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/no_happy_places_found"
+        android:textSize="@dimen/no_records_available_txt_size"
+        android:visibility="visible"
+        tools:visibility="visible"
+        />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionBarAdd"
         android:layout_width="wrap_content"

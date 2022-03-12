@@ -2,7 +2,9 @@ package com.example.happyplaces.database
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.happyplaces.models.HappyPlaceModel
 
@@ -65,6 +67,48 @@ class DatabaseHandler(context: Context) :
 
         db.close() // Closing database connection
         return result
+    }
+
+    fun getHappyPlacesList(): ArrayList<HappyPlaceModel> {
+        val happyPlaceList: ArrayList<HappyPlaceModel> = ArrayList()
+        val selectQuery = "SELECT * FROM $TABLE_HAPPY_PLACE"
+        val db = this.readableDatabase
+
+        try {
+            val cursor: Cursor = db.rawQuery(selectQuery, null)
+            if (cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getColumnIndex(KEY_ID)
+                    val title = cursor.getColumnIndex(KEY_TITLE)
+                    val image = cursor.getColumnIndex(KEY_IMAGE)
+                    val description = cursor.getColumnIndex(KEY_DESCRIPTION)
+                    val date = cursor.getColumnIndex(KEY_DATE)
+                    val location = cursor.getColumnIndex(KEY_LOCATION)
+                    val latitude = cursor.getColumnIndex(KEY_LATITUDE)
+                    val longitude = cursor.getColumnIndex(KEY_LONGITUDE)
+
+                    if (id > -1 && title > -1 && image > -1 && description > -1 && date > -1 && location > -1 && latitude > -1 && longitude > -1) {
+                        val place = HappyPlaceModel(
+                            cursor.getInt(id),
+                            cursor.getString(title),
+                            cursor.getString(image),
+                            cursor.getString(description),
+                            cursor.getString(date),
+                            cursor.getString(location),
+                            cursor.getDouble(latitude),
+                            cursor.getDouble(longitude)
+                        )
+                        happyPlaceList.add(place)
+                    }
+                } while (cursor.moveToNext())
+
+                cursor.close()
+            }
+        } catch (e: SQLiteException) {
+            db.execSQL(selectQuery)
+            return ArrayList()
+        }
+        return happyPlaceList
     }
 
 }
