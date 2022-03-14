@@ -89,9 +89,17 @@ class DatabaseHandler(context: Context) :
                 TABLE_HAPPY_PLACE, //the table which we want to update
                 contentValues, //the values
                 KEY_ID + "=" + happyPlace.id, //which row to update
-                null)
+                null
+            )
 
         db.close() // Closing database connection
+        return success
+    }
+
+    fun deleteHappyPlace(happyPlace: HappyPlaceModel): Int {
+        val db = this.writableDatabase
+        val success = db.delete(TABLE_HAPPY_PLACE, KEY_ID + "=" + happyPlace.id, null)
+        db.close()
         return success
     }
 
