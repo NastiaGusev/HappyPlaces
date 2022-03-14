@@ -46,6 +46,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     private var savedImageToInternalStorage: Uri? = null
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
+    private var happyPlacesDetails: HappyPlaceModel? = null
 
     companion object {
         private const val IMAGE_DIRECTORY = "HappyPlacesImages"
@@ -93,6 +94,11 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             onBackPressed()
         }
 
+        if (intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)) {
+            happyPlacesDetails =
+                intent.getParcelableExtra(MainActivity.EXTRA_PLACE_DETAILS) as HappyPlaceModel?
+        }
+
         dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
@@ -100,13 +106,26 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             updateDateView()
         }
         updateDateView()
+
+        if (happyPlacesDetails != null) {
+            supportActionBar?.title = "Edit Happy Place"
+            binding.etTitle.setText(happyPlacesDetails!!.title)
+            binding.etDescription.setText(happyPlacesDetails!!.description)
+            binding.etDate.setText(happyPlacesDetails!!.date)
+            binding.etLocation.setText(happyPlacesDetails!!.location)
+            latitude = happyPlacesDetails!!.latitude
+            longitude = happyPlacesDetails!!.longitude
+
+            savedImageToInternalStorage = Uri.parse(happyPlacesDetails!!.image)
+            binding.ivPlaceImage.setImageURI(savedImageToInternalStorage)
+
+            binding.btnSave.text = "UPDATE"
+        }
         binding.etDate.setOnClickListener(this)
         binding.tvAddImage.setOnClickListener(this)
         binding.btnSave.setOnClickListener(this)
 
     }
-
-
 
     private fun updateDateView() {
         val myFormat = "dd.MM.yyyy"
@@ -155,7 +174,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                     }
                     else -> {
                         val happyPlaceModel = HappyPlaceModel(
-                            0,
+                            if(happyPlacesDetails == null) 0 else happyPlacesDetails!!.id,
                             binding.etTitle.text.toString(),
                             savedImageToInternalStorage.toString(),
                             binding.etDescription.text.toString(),
@@ -165,13 +184,29 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                             longitude
                         )
                         val dbHandler = DatabaseHandler(this)
-                        val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
-                        if (addHappyPlace > 0){
-                            Toast.makeText(this, "The happy place details are inserted successfully!", Toast.LENGTH_LONG).show()
-                            setResult(Activity.RESULT_OK)
-                            finish()
+                        if(happyPlacesDetails == null) {
+                            val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
+                            if (addHappyPlace > 0) {
+                                Toast.makeText(
+                                    this,
+                                    "The happy place details are inserted successfully!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
+                        } else {
+                            val updateHappyPlace = dbHandler.updateHappyPlace(happyPlaceModel)
+                            if (updateHappyPlace > 0) {
+                                Toast.makeText(
+                                    this,
+                                    "The happy place details were updated successfully!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
                         }
-
                     }
                 }
 

@@ -8,29 +8,35 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.adapters.HappyPlacesAdapter
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ActivityMainBinding
 import com.example.happyplaces.models.HappyPlaceModel
+import com.example.happyplaces.utils.SwipeToEditCallback
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
-    companion object{
+    companion object {
+        private const val ADD_PLACE_ACTIVITY_REQUEST_CODE = 1
         var EXTRA_PLACE_DETAILS = "extra_place_details"
     }
 
-    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            //val data: Intent? = result.data
-            Log.d("TAG", "happy place added")
-            getHappyPlacesListFromLocalDB()
-        } else {
-            Log.d("TAG", "Cancelled or back pressed")
+    var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.d("TAG", result.resultCode.toString())
+            if (result.resultCode == Activity.RESULT_OK) {
+                //val data: Intent? = result.data
+                Log.d("TAG", "happy place added")
+                getHappyPlacesListFromLocalDB()
+            } else {
+                Log.d("TAG", "Cancelled or back pressed")
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,26 +51,40 @@ class MainActivity : AppCompatActivity() {
         getHappyPlacesListFromLocalDB()
     }
 
-    private fun setUpHappyPlacesRecyclerView(happyPlacesList: ArrayList<HappyPlaceModel>){
+    private fun setUpHappyPlacesRecyclerView(happyPlacesList: ArrayList<HappyPlaceModel>) {
         binding.happyPlacesRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.happyPlacesRecyclerView.setHasFixedSize(true)
-        val placesAdapter = HappyPlacesAdapter(happyPlacesList)
+        val placesAdapter = HappyPlacesAdapter(this, happyPlacesList)
         binding.happyPlacesRecyclerView.adapter = placesAdapter
 
-        placesAdapter.setOnClickListener(object :HappyPlacesAdapter.OnClickListener{
+        placesAdapter.setOnClickListener(object : HappyPlacesAdapter.OnClickListener {
             override fun onClick(position: Int, model: HappyPlaceModel) {
                 val intent = Intent(this@MainActivity, HappyPlaceDetailActivity::class.java)
                 intent.putExtra(EXTRA_PLACE_DETAILS, model)
                 startActivity(intent)
             }
         })
+
+        val editSwipeHandler = object : SwipeToEditCallback(this) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = binding.happyPlacesRecyclerView.adapter as HappyPlacesAdapter
+                adapter.notifyEditItem(
+                    this@MainActivity,
+                    viewHolder.absoluteAdapterPosition,
+                    ADD_PLACE_ACTIVITY_REQUEST_CODE
+                )
+            }
+        }
+
+        val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
+        editItemTouchHelper.attachToRecyclerView(binding.happyPlacesRecyclerView)
     }
 
-    private fun getHappyPlacesListFromLocalDB(){
+    private fun getHappyPlacesListFromLocalDB() {
         val dbHandler = DatabaseHandler(this)
-        val happyPlaceList :ArrayList<HappyPlaceModel> = dbHandler.getHappyPlacesList()
+        val happyPlaceList: ArrayList<HappyPlaceModel> = dbHandler.getHappyPlacesList()
 
-        if(happyPlaceList.size > 0) {
+        if (happyPlaceList.size > 0) {
             binding.happyPlacesRecyclerView.visibility = View.VISIBLE
             binding.txtNoRecordsAvailable.visibility = View.GONE
             setUpHappyPlacesRecyclerView(happyPlaceList)
