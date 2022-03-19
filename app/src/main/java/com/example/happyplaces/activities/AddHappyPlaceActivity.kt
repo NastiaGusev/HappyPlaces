@@ -1,5 +1,6 @@
 package com.example.happyplaces.activities
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -8,8 +9,11 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
@@ -22,7 +26,9 @@ import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ActivityAddHappyPlaceBinding
 import com.example.happyplaces.models.HappyPlaceModel
+import com.example.happyplaces.utils.GetAddressFromLatLng
 import com.google.android.gms.common.api.Status
+import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -53,9 +59,32 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
     private var happyPlacesDetails: HappyPlaceModel? = null
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     companion object {
         private const val IMAGE_DIRECTORY = "HappyPlacesImages"
+    }
+
+    private val locationCallBack = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            val lastLocation: Location = locationResult.lastLocation
+            latitude = lastLocation.latitude
+            longitude = lastLocation.longitude
+            val addressTask = GetAddressFromLatLng(this@AddHappyPlaceActivity, latitude, longitude)
+
+            addressTask.setAddressListener(object : GetAddressFromLatLng.AddressListener {
+                override fun onAddressFound(address: String?) {
+                    runOnUiThread {
+                        binding.etLocation.setText(address)
+                    }
+                }
+
+                override fun onError() {
+                    Log.d("TAG", "onError: couldn't get location")
+                }
+            })
+            addressTask.getAddress()
+        }
     }
 
     private var cameraResultLauncher: ActivityResultLauncher<Intent> =
@@ -105,17 +134,37 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
         initView()
 
-        if(!Places.isInitialized()){
-            Places.initialize(this@AddHappyPlaceActivity,resources.getString(R.string.MAPS_KEY))
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+        if (!Places.isInitialized()) {
+            Places.initialize(this@AddHappyPlaceActivity, resources.getString(R.string.MAPS_KEY))
         }
 
         binding.etDate.setOnClickListener(this)
         binding.tvAddImage.setOnClickListener(this)
         binding.btnSave.setOnClickListener(this)
         binding.etLocation.setOnClickListener(this)
+        binding.tvSelectCurrentLocation.setOnClickListener(this)
     }
 
-    private fun initView(){
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData() {
+        var locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 1000 // how many ms we want to run the request
+            numUpdates = 1 //how many updated
+        }
+
+        Looper.myLooper()?.let {
+            fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest,
+                locationCallBack,
+                it
+            )
+        }
+    }
+
+    private fun initView() {
         binding = ActivityAddHappyPlaceBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -146,7 +195,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         binding.etDate.setText(simpleDateFormat.format(cal.time).toString())
     }
 
-    private fun initHappyPlace(){
+    private fun initHappyPlace() {
         if (happyPlacesDetails != null) {
             supportActionBar?.title = "Edit Happy Place"
             binding.etTitle.setText(happyPlacesDetails!!.title)
@@ -175,25 +224,70 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                 saveToDB()
             }
             binding.etLocation.id -> {
-                try {
-                    // These are the list of fields which we required is passed
-                    val fields = listOf(
-                        Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
-                        Place.Field.ADDRESS
-                    )
-                    // Start the autocomplete intent with a unique request code.
-                    val intent =
-                        Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-                            .build(this@AddHappyPlaceActivity)
-                    locationResultLauncher.launch(intent)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                locationPick()
+            }
+            binding.tvSelectCurrentLocation.id -> {
+                getCurrentLocation()
             }
         }
     }
 
-    private fun datePickerDialog(){
+    private fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+    private fun getCurrentLocation() {
+        if (!isLocationEnabled()) {
+            Toast.makeText(
+                this@AddHappyPlaceActivity,
+                "Your location provider is turned off! Please turn it on",
+                Toast.LENGTH_SHORT
+            ).show()
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+        } else {
+            Dexter.withContext(this).withPermissions(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ).withListener(object : MultiplePermissionsListener {
+                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                    if (report!!.areAllPermissionsGranted()) {
+                        requestNewLocationData()
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permissons: MutableList<PermissionRequest>,
+                    token: PermissionToken?
+                ) {
+                    showRationalDialogForPermissions()
+                }
+            }).onSameThread().check()
+        }
+    }
+
+    private fun locationPick() {
+        try {
+            // These are the list of fields which we required is passed
+            val fields = listOf(
+                Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                Place.Field.ADDRESS
+            )
+            // Start the autocomplete intent with a unique request code.
+            val intent =
+                Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                    .build(this@AddHappyPlaceActivity)
+            locationResultLauncher.launch(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun datePickerDialog() {
         DatePickerDialog(
             this@AddHappyPlaceActivity,
             dateSetListener,
@@ -203,7 +297,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         ).show()
     }
 
-    private fun imagePickerDialog(){
+    private fun imagePickerDialog() {
         val pictureDialog = AlertDialog.Builder(this)
         pictureDialog.setTitle("Select Action:")
         val pictureDialogItems =
@@ -246,7 +340,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             ) {
                 showRationalDialogForPermissions()
             }
-        }).onSameThread().check();
+        }).onSameThread().check()
     }
 
     private fun choosePhotoFromGallery() {
@@ -268,10 +362,10 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             ) {
                 showRationalDialogForPermissions()
             }
-        }).onSameThread().check();
+        }).onSameThread().check()
     }
 
-    private fun saveToDB(){
+    private fun saveToDB() {
         when {
             binding.etTitle.text.isNullOrEmpty() -> {
                 Toast.makeText(this, "Please enter title", Toast.LENGTH_LONG).show()
@@ -287,7 +381,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             }
             else -> {
                 val happyPlaceModel = HappyPlaceModel(
-                    if(happyPlacesDetails == null) 0 else happyPlacesDetails!!.id,
+                    if (happyPlacesDetails == null) 0 else happyPlacesDetails!!.id,
                     binding.etTitle.text.toString(),
                     savedImageToInternalStorage.toString(),
                     binding.etDescription.text.toString(),
@@ -297,7 +391,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                     longitude
                 )
                 val dbHandler = DatabaseHandler(this)
-                if(happyPlacesDetails == null) {
+                if (happyPlacesDetails == null) {
                     val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
                     if (addHappyPlace > 0) {
                         Toast.makeText(

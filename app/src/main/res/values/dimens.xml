@@ -13,7 +13,7 @@
     <dimen name="add_screen_btn_save_marginTop">24dp</dimen>
     <dimen name="add_screen_btn_save_paddingTopBottom">8dp</dimen>
     <dimen name="btn_text_size">18sp</dimen>
-    <dimen name="image_border_stroke_size">0.5dp</dimen>
+    <dimen name="image_border_stroke_size">0.7dp</dimen>
     <dimen name="add_place_image_shape_radius">3dp</dimen>
     <dimen name="button_radius">10dp</dimen>
     <dimen name="no_records_available_txt_size">16sp</dimen>
@@ -39,5 +39,10 @@
     <dimen name="detail_screen_btn_view_on_map_marginTop">16dp</dimen>
     <dimen name="detail_screen_btn_view_on_map_PaddingTopBottom">8dp</dimen>
     <dimen name="detail_screen_btn_view_on_map_text_size">18sp</dimen>
+
+
+    <dimen name="add_place_select_current_location_marginTop">5dp</dimen>
+    <dimen name="add_place_select_current_location_padding">10dp</dimen>
+    <dimen name="add_place_select_current_location_textsize">16sp</dimen>
 
 </resources>
